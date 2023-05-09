@@ -1,9 +1,8 @@
 package com.gamerforea.eventhelper.integration.bukkit;
 
 import com.gamerforea.eventhelper.EventHelperMod;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
@@ -11,13 +10,14 @@ import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import net.minecraft.world.entity.Entity;
 
 public final class BukkitUtils
 {
 	private static final Method getBukkitEntity;
 
 	@Nonnull
-	public static Player getPlayer(@Nonnull EntityPlayer player)
+	public static Player getPlayer(@Nonnull ServerPlayer player)
 	{
 		return (Player) getEntity(player);
 	}
@@ -36,25 +36,17 @@ public final class BukkitUtils
 	}
 
 	@Nonnull
-	public static BlockFace getBlockFace(@Nonnull EnumFacing side)
+	public static BlockFace getBlockFace(@Nonnull Direction side)
 	{
-		switch (side)
-		{
-			case DOWN:
-				return BlockFace.DOWN;
-			case UP:
-				return BlockFace.UP;
-			case NORTH:
-				return BlockFace.NORTH;
-			case SOUTH:
-				return BlockFace.SOUTH;
-			case WEST:
-				return BlockFace.WEST;
-			case EAST:
-				return BlockFace.EAST;
-			default:
-				return BlockFace.SELF;
-		}
+		return switch (side) {
+			case DOWN -> BlockFace.DOWN;
+			case UP -> BlockFace.UP;
+			case NORTH -> BlockFace.NORTH;
+			case SOUTH -> BlockFace.SOUTH;
+			case WEST -> BlockFace.WEST;
+			case EAST -> BlockFace.EAST;
+			default -> BlockFace.SELF;
+		};
 	}
 
 	static

@@ -1,15 +1,16 @@
 package com.gamerforea.eventhelper.integration;
 
 import com.gamerforea.eventhelper.cause.ICauseStackManager;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.server.FMLServerHandler;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.extensions.IForgeBlockState;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,54 +19,50 @@ import java.util.UUID;
 
 public interface IIntegration
 {
-	boolean cantBreak(@Nonnull EntityPlayer player, @Nonnull BlockPos pos);
+	boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos);
 
-	boolean cantPlace(@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState);
+	boolean cantPlace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
 
-	boolean cantReplace(@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState);
+	boolean cantReplace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
 
-	boolean cantAttack(@Nonnull EntityPlayer player, @Nonnull Entity victim);
+	boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim);
 
 	default boolean cantInteract(
-			@Nonnull EntityPlayer player,
-			@Nonnull EnumHand hand, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull ServerPlayer player,
+			@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return this.cantInteract(player, new BlockInteractParams(hand, targetPos, targetSide));
 	}
 
 	default boolean cantInteract(
-			@Nonnull EntityPlayer player,
-			@Nonnull EnumHand hand,
-			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull ServerPlayer player,
+			@Nonnull InteractionHand hand,
+			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return this.cantInteract(player, new BlockInteractParams(hand, targetPos, targetSide).setInteractionPos(interactionPos));
 	}
 
-	boolean cantInteract(@Nonnull EntityPlayer player, @Nonnull BlockInteractParams params);
+	boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull BlockInteractParams params);
 
-	boolean hasPermission(@Nonnull EntityPlayer player, @Nonnull String permission);
+	boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission);
 
 	default boolean hasPermission(@Nonnull UUID playerId, @Nonnull String permission)
 	{
-		MinecraftServer server = FMLServerHandler.instance().getServer();
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 		if (server == null)
 			return false;
 		PlayerList playerList = server.getPlayerList();
-		if (playerList == null)
-			return false;
-		EntityPlayer player = playerList.getPlayerByUUID(playerId);
+		ServerPlayer player = playerList.getPlayer(playerId);
 		return player != null && this.hasPermission(player, permission);
 	}
 
 	default boolean hasPermission(@Nonnull String playerName, @Nonnull String permission)
 	{
-		MinecraftServer server = FMLServerHandler.instance().getServer();
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 		if (server == null)
 			return false;
 		PlayerList playerList = server.getPlayerList();
-		if (playerList == null)
-			return false;
-		EntityPlayer player = playerList.getPlayerByUsername(playerName);
+		ServerPlayer player = playerList.getPlayerByName(playerName);
 		return player != null && this.hasPermission(player, permission);
 	}
 
@@ -78,18 +75,18 @@ public interface IIntegration
 	final class BlockInteractParams
 	{
 		@Nonnull
-		private final EnumHand hand;
+		private final InteractionHand hand;
 		@Nonnull
 		private final BlockPos targetPos;
 		@Nonnull
-		private final EnumFacing targetSide;
+		private final Direction targetSide;
 
 		@Nonnull
 		private BlockPos interactionPos;
 		@Nonnull
 		private BlockInteractAction action = BlockInteractAction.RIGHT_CLICK;
 
-		public BlockInteractParams(@Nonnull EnumHand hand, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+		public BlockInteractParams(@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 		{
 			this.hand = hand;
 			this.targetPos = targetPos;
@@ -98,7 +95,7 @@ public interface IIntegration
 		}
 
 		@Nonnull
-		public EnumHand getHand()
+		public InteractionHand getHand()
 		{
 			return this.hand;
 		}
@@ -110,7 +107,7 @@ public interface IIntegration
 		}
 
 		@Nonnull
-		public EnumFacing getTargetSide()
+		public Direction getTargetSide()
 		{
 			return this.targetSide;
 		}

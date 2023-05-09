@@ -1,8 +1,8 @@
 package com.gamerforea.eventhelper.fake;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 
@@ -26,8 +26,8 @@ public final class FakePlayerContainerEntity extends FakePlayerContainer
 
 	@Override
 	@Nonnull
-	public final World getWorld()
+	public final Level getWorld()
 	{
-		return this.entity.world;
+		return this.entity.getLevel();
 	}
 }

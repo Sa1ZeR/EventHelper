@@ -6,8 +6,7 @@ public interface ICauseStackFrame extends AutoCloseable
 {
 	ICauseStackFrame pushCause(Object obj);
 
-	default ICauseStackFrame pushCause(FakePlayerContainer fakePlayerContainer)
-	{
+	default ICauseStackFrame pushCause(FakePlayerContainer fakePlayerContainer) {
 		return this.pushCause(fakePlayerContainer.getPlayer());
 	}
 

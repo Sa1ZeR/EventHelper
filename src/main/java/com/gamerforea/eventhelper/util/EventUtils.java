@@ -5,13 +5,12 @@ import com.gamerforea.eventhelper.cause.DummyCauseStackManager;
 import com.gamerforea.eventhelper.cause.ICauseStackManager;
 import com.gamerforea.eventhelper.integration.IIntegration;
 import com.gamerforea.eventhelper.integration.bukkit.BukkitIntegration;
-import com.gamerforea.eventhelper.integration.sponge.SpongeIntegration;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.common.extensions.IForgeBlockState;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -23,7 +22,7 @@ public final class EventUtils
 {
 	private static final IIntegration INTEGRATION;
 
-	public static boolean cantBreak(@Nonnull EntityPlayer player, @Nonnull BlockPos pos)
+	public static boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos)
 	{
 		try
 		{
@@ -39,7 +38,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantPlace(
-			@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+			@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		try
 		{
@@ -55,7 +54,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantReplace(
-			@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+			@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		try
 		{
@@ -70,7 +69,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean cantAttack(@Nonnull EntityPlayer player, @Nonnull Entity victim)
+	public static boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim)
 	{
 		try
 		{
@@ -86,8 +85,8 @@ public final class EventUtils
 	}
 
 	public static boolean cantInteract(
-			@Nonnull EntityPlayer player,
-			@Nonnull EnumHand hand, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull ServerPlayer player,
+			@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		try
 		{
@@ -103,9 +102,9 @@ public final class EventUtils
 	}
 
 	public static boolean cantInteract(
-			@Nonnull EntityPlayer player,
-			@Nonnull EnumHand hand,
-			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull ServerPlayer player,
+			@Nonnull InteractionHand hand,
+			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		try
 		{
@@ -120,7 +119,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean cantInteract(@Nonnull EntityPlayer player, @Nonnull IIntegration.BlockInteractParams params)
+	public static boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull IIntegration.BlockInteractParams params)
 	{
 		try
 		{
@@ -135,7 +134,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean hasPermission(@Nonnull EntityPlayer player, @Nonnull String permission)
+	public static boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission)
 	{
 		try
 		{
@@ -186,23 +185,7 @@ public final class EventUtils
 		return specificCauseStackManager == null ? DummyCauseStackManager.INSTANCE : specificCauseStackManager;
 	}
 
-	static
-	{
-		IIntegration integration = null;
-		switch (EventHelperMod.integrationType)
-		{
-			case AUTO:
-				integration = SpongeIntegration.getIntegration();
-				if (integration == null)
-					integration = BukkitIntegration.getIntegration();
-				break;
-			case SPONGE:
-				integration = SpongeIntegration.getIntegration();
-				break;
-			case BUKKIT:
-				integration = BukkitIntegration.getIntegration();
-				break;
-		}
-		INTEGRATION = Objects.requireNonNull(integration, "Integration not found");
+	static {
+		INTEGRATION = BukkitIntegration.getIntegration();
 	}
 }

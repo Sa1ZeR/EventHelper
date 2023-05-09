@@ -6,20 +6,23 @@ import com.gamerforea.eventhelper.util.ExplosionByPlayer;
 import com.gamerforea.eventhelper.util.FastUtils;
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.common.util.FakePlayer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
+
+;
 
 public abstract class FakePlayerContainer
 {
@@ -33,7 +36,7 @@ public abstract class FakePlayerContainer
 	private GameProfile profile;
 	private FakePlayer fakePlayer;
 
-	private WeakReference<EntityPlayer> realPlayer;
+	private WeakReference<ServerPlayer> realPlayer;
 
 	protected FakePlayerContainer(@Nonnull FakePlayerContainer fake)
 	{
@@ -49,14 +52,14 @@ public abstract class FakePlayerContainer
 	}
 
 	@Nonnull
-	public abstract World getWorld();
+	public abstract Level getWorld();
 
 	@Nonnull
-	public final EntityPlayer getPlayer()
+	public final ServerPlayer getPlayer()
 	{
 		if (this.realPlayer != null)
 		{
-			EntityPlayer p = this.realPlayer.get();
+			ServerPlayer p = this.realPlayer.get();
 			if (p == null)
 				this.realPlayer = null;
 			else
@@ -80,10 +83,10 @@ public abstract class FakePlayerContainer
 
 	public final boolean setRealPlayer(@Nullable Entity entity)
 	{
-		return entity instanceof EntityPlayer && this.setRealPlayer((EntityPlayer) entity);
+		return entity instanceof Player && this.setRealPlayer((Player) entity);
 	}
 
-	public final boolean setRealPlayer(@Nullable EntityPlayer player)
+	public final boolean setRealPlayer(@Nullable ServerPlayer player)
 	{
 		if (this.setProfile(player))
 		{
@@ -115,12 +118,12 @@ public abstract class FakePlayerContainer
 
 	public final boolean setProfile(@Nullable Entity entity)
 	{
-		if (entity instanceof EntityPlayer)
-			return this.setProfile((EntityPlayer) entity);
+		if (entity instanceof Player)
+			return this.setProfile(entity);
 		return false;
 	}
 
-	public final boolean setProfile(@Nullable EntityPlayer player)
+	public final boolean setProfile(@Nullable Player player)
 	{
 		return player != null && this.setProfile(player.getGameProfile());
 	}
@@ -141,12 +144,12 @@ public abstract class FakePlayerContainer
 		return EventUtils.cantBreak(this.getPlayer(), pos);
 	}
 
-	public final boolean cantPlace(@Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+	public final boolean cantPlace(@Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		return EventUtils.cantPlace(this.getPlayer(), pos, blockState);
 	}
 
-	public final boolean cantReplace(@Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+	public final boolean cantReplace(@Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		return EventUtils.cantReplace(this.getPlayer(), pos, blockState);
 	}
@@ -157,14 +160,14 @@ public abstract class FakePlayerContainer
 	}
 
 	public final boolean cantInteract(
-			@Nonnull EnumHand hand, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return EventUtils.cantInteract(this.getPlayer(), hand, targetPos, targetSide);
 	}
 
 	public final boolean cantInteract(
-			@Nonnull EnumHand hand,
-			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull EnumFacing targetSide)
+			@Nonnull InteractionHand hand,
+			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return EventUtils.cantInteract(this.getPlayer(), hand, interactionPos, targetPos, targetSide);
 	}
@@ -188,18 +191,17 @@ public abstract class FakePlayerContainer
 		return ExplosionByPlayer.newExplosion(this, this.getWorld(), entityIn, x, y, z, strength, isFlaming, isSmoking);
 	}
 
-	public final void writeToNBT(NBTTagCompound nbt)
-	{
+	public final void writeToNBT(CompoundTag nbt) {
 		if (this.profile != null)
 		{
-			nbt.setString(NBT_FAKE_NAME, this.profile.getName());
+			nbt.putString(NBT_FAKE_NAME, this.profile.getName());
 			UUID id = this.profile.getId();
-			nbt.setLong(NBT_FAKE_ID_MOST, id.getMostSignificantBits());
-			nbt.setLong(NBT_FAKE_ID_LEAST, id.getLeastSignificantBits());
+			nbt.putLong(NBT_FAKE_ID_MOST, id.getMostSignificantBits());
+			nbt.putLong(NBT_FAKE_ID_LEAST, id.getLeastSignificantBits());
 		}
 	}
 
-	public final void readFromNBT(NBTTagCompound nbt)
+	public final void readFromNBT(CompoundTag nbt)
 	{
 		String name = nbt.getString(NBT_FAKE_NAME);
 		if (!name.isEmpty())

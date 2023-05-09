@@ -2,18 +2,18 @@ package com.gamerforea.eventhelper.util;
 
 import com.gamerforea.eventhelper.ModConstants;
 import com.gamerforea.eventhelper.fake.FakePlayerContainer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.play.server.SPacketExplosion;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.event.ForgeEventFactory;
-import net.minecraftforge.event.world.ExplosionEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,29 +21,29 @@ import javax.annotation.Nullable;
 @Mod.EventBusSubscriber(modid = ModConstants.MODID)
 public class ExplosionByPlayer extends Explosion
 {
-	private final EntityPlayer player;
+	private final ServerPlayer player;
 
 	public ExplosionByPlayer(
 			@Nonnull FakePlayerContainer fake,
-			@Nonnull World world, @Nullable
+			@Nonnull Level world, @Nullable
 					Entity exploder, double x, double y, double z, float size, boolean flaming, boolean damagesTerrain)
 	{
 		this(fake.getPlayer(), world, exploder, x, y, z, size, flaming, damagesTerrain);
 	}
 
 	public ExplosionByPlayer(
-			@Nonnull EntityPlayer player,
-			@Nonnull World world, @Nullable
+			@Nonnull ServerPlayer player,
+			@Nonnull Level world, @Nullable
 					Entity exploder, double x, double y, double z, float size, boolean flaming, boolean damagesTerrain)
 	{
-		super(world, exploder, x, y, z, size, flaming, damagesTerrain);
+		super(world, exploder, x, y, z, size, flaming, damagesTerrain ? BlockInteraction.BREAK : BlockInteraction.NONE);
 		this.player = player;
 	}
 
 	@Nonnull
 	public static ExplosionByPlayer createExplosion(
 			@Nonnull FakePlayerContainer fake,
-			@Nonnull World world,
+			@Nonnull Level world,
 			@Nullable Entity exploder, double x, double y, double z, float strength, boolean isSmoking)
 	{
 		return newExplosion(fake, world, exploder, x, y, z, strength, false, isSmoking);
@@ -51,8 +51,8 @@ public class ExplosionByPlayer extends Explosion
 
 	@Nonnull
 	public static ExplosionByPlayer createExplosion(
-			@Nonnull EntityPlayer player,
-			@Nonnull World world,
+			@Nonnull ServerPlayer player,
+			@Nonnull Level world,
 			@Nullable Entity exploder, double x, double y, double z, float strength, boolean isSmoking)
 	{
 		return newExplosion(player, world, exploder, x, y, z, strength, false, isSmoking);
@@ -61,7 +61,7 @@ public class ExplosionByPlayer extends Explosion
 	@Nonnull
 	public static ExplosionByPlayer newExplosion(
 			@Nonnull FakePlayerContainer fake,
-			@Nonnull World world, @Nullable
+			@Nonnull Level world, @Nullable
 					Entity exploder, double x, double y, double z, float strength, boolean isFlaming, boolean isSmoking)
 	{
 		return newExplosion(new ExplosionByPlayer(fake, world, exploder, x, y, z, strength, isFlaming, isSmoking), world, x, y, z, strength, isSmoking);
@@ -69,9 +69,9 @@ public class ExplosionByPlayer extends Explosion
 
 	@Nonnull
 	public static ExplosionByPlayer newExplosion(
-			@Nonnull EntityPlayer player,
-			@Nonnull World world, @Nullable
-					Entity exploder, double x, double y, double z, float strength, boolean isFlaming, boolean isSmoking)
+			@Nonnull ServerPlayer player,
+			@Nonnull Level world, @Nullable
+			Entity exploder, double x, double y, double z, float strength, boolean isFlaming, boolean isSmoking)
 	{
 		return newExplosion(new ExplosionByPlayer(player, world, exploder, x, y, z, strength, isFlaming, isSmoking), world, x, y, z, strength, isSmoking);
 	}
@@ -79,24 +79,23 @@ public class ExplosionByPlayer extends Explosion
 	@Nonnull
 	private static ExplosionByPlayer newExplosion(
 			@Nonnull ExplosionByPlayer explosion,
-			@Nonnull World world, double x, double y, double z, float strength, boolean isSmoking)
+			@Nonnull Level world, double x, double y, double z, float strength, boolean isSmoking)
 	{
 		if (ForgeEventFactory.onExplosionStart(world, explosion))
 			return explosion;
 
-		boolean isServerWorld = world instanceof WorldServer;
-		explosion.doExplosionA();
-		explosion.doExplosionB(!isServerWorld);
+		boolean isServerWorld = world instanceof ServerLevel;
+		explosion.explode();
+		explosion.finalizeExplosion(!isServerWorld);
 
-		if (isServerWorld)
-		{
+		if (isServerWorld) {
 			if (!isSmoking)
-				explosion.clearAffectedBlockPositions();
+				explosion.clearToBlow();
 
-			for (EntityPlayer player : world.playerEntities)
+			for (Player player : world.players())
 			{
-				if (player.getDistanceSq(x, y, z) < 4096)
-					((EntityPlayerMP) player).connection.sendPacket(new SPacketExplosion(x, y, z, strength, explosion.getAffectedBlockPositions(), explosion.getPlayerKnockbackMap().get(player)));
+				if (player.distanceToSqr(x, y, z) < 4096)
+					((ServerPlayer)player).connection.send(new ClientboundExplodePacket(x, y, z, strength, explosion.getToBlow(), explosion.getHitPlayers().get(player)));
 			}
 		}
 
@@ -108,10 +107,9 @@ public class ExplosionByPlayer extends Explosion
 	public static void onDetonate(ExplosionEvent.Detonate event)
 	{
 		Explosion explosion = event.getExplosion();
-		if (explosion instanceof ExplosionByPlayer)
+		if (explosion instanceof ExplosionByPlayer explosionByPlayer)
 		{
-			ExplosionByPlayer explosionByPlayer = (ExplosionByPlayer) explosion;
-			EntityPlayer player = explosionByPlayer.player;
+			ServerPlayer player = explosionByPlayer.player;
 			event.getAffectedBlocks().removeIf(pos -> EventUtils.cantBreak(player, pos));
 			event.getAffectedEntities().removeIf(entity -> EventUtils.cantAttack(player, entity));
 		}

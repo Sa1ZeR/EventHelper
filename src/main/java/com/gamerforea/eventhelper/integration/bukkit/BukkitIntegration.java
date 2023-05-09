@@ -2,11 +2,12 @@ package com.gamerforea.eventhelper.integration.bukkit;
 
 import com.gamerforea.eventhelper.EventHelperMod;
 import com.gamerforea.eventhelper.integration.IIntegration;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.common.extensions.IForgeBlockState;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -71,7 +72,7 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantBreak(@Nonnull EntityPlayer player, @Nonnull BlockPos pos)
+		public boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos)
 		{
 			Player bukkitPlayer = getPlayer(player);
 			Block block = bukkitPlayer.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
@@ -81,21 +82,21 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantPlace(@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+		public boolean cantPlace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
 			return this.cantBreak(player, pos);
 		}
 
 		@Override
-		public boolean cantReplace(@Nonnull EntityPlayer player, @Nonnull BlockPos pos, @Nonnull IBlockState blockState)
+		public boolean cantReplace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
 			return this.cantBreak(player, pos);
 		}
 
 		@Override
-		public boolean cantAttack(@Nonnull EntityPlayer player, @Nonnull Entity victim)
+		public boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim)
 		{
 			Player bukkitPlayer = getPlayer(player);
 			org.bukkit.entity.Entity bukkitVictim = getEntity(victim);
@@ -105,19 +106,19 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantInteract(@Nonnull EntityPlayer player, @Nonnull BlockInteractParams params)
+		public boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull BlockInteractParams params)
 		{
 			Player bukkitPlayer = getPlayer(player);
 			PlayerInventory inventory = bukkitPlayer.getInventory();
-			ItemStack stack = params.getHand() == EnumHand.MAIN_HAND ? inventory.getItemInMainHand() : inventory.getItemInOffHand();
+			ItemStack stack = params.getHand() == InteractionHand.MAIN_HAND ? inventory.getItemInMainHand() : inventory.getItemInOffHand();
 			Block block = bukkitPlayer.getWorld().getBlockAt(params.getTargetPos().getX(), params.getTargetPos().getY(), params.getTargetPos().getZ());
-			PlayerInteractEvent event = new PlayerInteractEvent(bukkitPlayer, params.getAction() == BlockInteractAction.RIGHT_CLICK ? Action.RIGHT_CLICK_BLOCK : Action.LEFT_CLICK_BLOCK, stack, block, getBlockFace(params.getTargetSide()), params.getHand() == EnumHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
+			PlayerInteractEvent event = new PlayerInteractEvent(bukkitPlayer, params.getAction() == BlockInteractAction.RIGHT_CLICK ? Action.RIGHT_CLICK_BLOCK : Action.LEFT_CLICK_BLOCK, stack, block, getBlockFace(params.getTargetSide()), params.getHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND);
 			Bukkit.getPluginManager().callEvent(event);
 			return event.isCancelled();
 		}
 
 		@Override
-		public boolean hasPermission(@Nonnull EntityPlayer player, @Nonnull String permission)
+		public boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission)
 		{
 			return getPlayer(player).hasPermission(permission);
 		}

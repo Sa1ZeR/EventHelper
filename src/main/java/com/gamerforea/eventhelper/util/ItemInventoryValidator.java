@@ -1,13 +1,13 @@
 package com.gamerforea.eventhelper.util;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -16,8 +16,7 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class ItemInventoryValidator
-{
+public final class ItemInventoryValidator {
 	public static final String NBT_KEY_ID = "UID";
 	private static final Random RANDOM = new Random();
 
@@ -30,7 +29,7 @@ public final class ItemInventoryValidator
 	@Nullable
 	private final Predicate<Item> itemValidator;
 	@Nullable
-	private final Function<EntityPlayer, ItemStack> stackGetter;
+	private final Function<Player, ItemStack> stackGetter;
 
 	private boolean itemInHotbar = true;
 	private int slotIndex = -1;
@@ -46,14 +45,14 @@ public final class ItemInventoryValidator
 		this(stack, null, true, itemValidator);
 	}
 
-	public ItemInventoryValidator(@Nullable ItemStack stack, @Nullable Function<EntityPlayer, ItemStack> stackGetter)
+	public ItemInventoryValidator(@Nullable ItemStack stack, @Nullable Function<Player, ItemStack> stackGetter)
 	{
 		this(stack, null, true, stackGetter);
 	}
 
 	public ItemInventoryValidator(
 			@Nullable ItemStack stack,
-			@Nullable Predicate<Item> itemValidator, @Nullable Function<EntityPlayer, ItemStack> stackGetter)
+			@Nullable Predicate<Item> itemValidator, @Nullable Function<Player, ItemStack> stackGetter)
 	{
 		this(stack, null, true, itemValidator, stackGetter);
 	}
@@ -73,7 +72,7 @@ public final class ItemInventoryValidator
 	public ItemInventoryValidator(
 			@Nullable ItemStack stack,
 			@Nullable String nbtKeyId, boolean generateIdIfAbsent,
-			@Nullable Function<EntityPlayer, ItemStack> stackGetter)
+			@Nullable Function<Player, ItemStack> stackGetter)
 	{
 		this(stack, nbtKeyId, generateIdIfAbsent, null, stackGetter);
 	}
@@ -81,7 +80,7 @@ public final class ItemInventoryValidator
 	public ItemInventoryValidator(
 			@Nullable ItemStack stack,
 			@Nullable String nbtKeyId, boolean generateIdIfAbsent,
-			@Nullable Predicate<Item> itemValidator, @Nullable Function<EntityPlayer, ItemStack> stackGetter)
+			@Nullable Predicate<Item> itemValidator, @Nullable Function<Player, ItemStack> stackGetter)
 	{
 		this.item = stack == null ? Items.AIR : stack.getItem();
 		int uniqueId = 0;
@@ -91,21 +90,18 @@ public final class ItemInventoryValidator
 
 		if (stack != null && !stack.isEmpty() && (itemValidator == null || itemValidator.test(stack.getItem())))
 		{
-			NBTTagCompound nbt = stack.getTagCompound();
-			if (nbt == null && generateIdIfAbsent)
-			{
-				nbt = new NBTTagCompound();
-				stack.setTagCompound(nbt);
+			CompoundTag nbt = stack.getTag();
+			if (nbt == null && generateIdIfAbsent) {
+				nbt = new CompoundTag();
+				stack.setTag(nbt);
 			}
 
-			if (nbt != null)
-			{
-				if (nbt.hasKey(nbtKeyId))
-					uniqueId = nbt.getInteger(nbtKeyId);
-				else
-				{
+			if (nbt != null) {
+				if (nbt.hasUUID(nbtKeyId))
+					uniqueId = nbt.getInt(nbtKeyId);
+				else {
 					uniqueId = RANDOM.nextInt();
-					nbt.setInteger(nbtKeyId, uniqueId);
+					nbt.putInt(nbtKeyId, uniqueId);
 				}
 			}
 		}
@@ -151,27 +147,26 @@ public final class ItemInventoryValidator
 
 	public boolean tryGetSlotIdFromPlayerSlot(@Nonnull Slot slot)
 	{
-		if (this.slotIndex >= 0 && slot.inventory instanceof InventoryPlayer && slot.getSlotIndex() == this.slotIndex)
+		if (this.slotIndex >= 0 && slot.container instanceof PlayerContainerEvent && slot.getSlotIndex() == this.slotIndex)
 		{
-			this.setSlotId(slot.slotNumber);
+			this.setSlotId(slot.index);
 			return true;
 		}
 		return false;
 	}
 
-	public boolean canInteractWith(@Nonnull EntityPlayer player)
+	public boolean canInteractWith(@Nonnull Player player)
 	{
-		if (this.itemInHotbar && this.slotIndex >= 0 && this.slotIndex != player.inventory.currentItem)
+		if (this.itemInHotbar && this.slotIndex >= 0 && this.slotIndex != player.getInventory().selected)
 			return false;
 
 		if (this.item != Items.AIR)
 		{
 			ItemStack stackToCheck;
-			if (this.stackGetter == null)
-			{
+			if (this.stackGetter == null) {
 				if (this.slotIndex < 0)
 					return true;
-				stackToCheck = player.inventory.getStackInSlot(this.slotIndex);
+				stackToCheck = player.getInventory().getItem(this.slotIndex);
 			}
 			else
 				stackToCheck = this.stackGetter.apply(player);
@@ -181,8 +176,7 @@ public final class ItemInventoryValidator
 		return true;
 	}
 
-	public boolean canSlotClick(int slotId, int dragType, @Nonnull ClickType clickType, @Nonnull EntityPlayer player)
-	{
+	public boolean canSlotClick(int slotId, int dragType, @Nonnull ClickType clickType, @Nonnull Player player) {
 		if (this.slotId >= 0 && slotId == this.slotId)
 			return false;
 		if (clickType == ClickType.SWAP && this.itemInHotbar && this.slotIndex >= 0 && dragType == this.slotIndex)
@@ -197,7 +191,7 @@ public final class ItemInventoryValidator
 		if (this.item != comparison.getItem())
 			return false;
 
-		NBTTagCompound comparisonNbt = comparison.getTagCompound();
-		return comparisonNbt != null && this.uniqueId == comparisonNbt.getInteger(this.nbtIdKey);
+		CompoundTag comparisonNbt = comparison.getTag();
+		return comparisonNbt != null && this.uniqueId == comparisonNbt.getInt(this.nbtIdKey);
 	}
 }
