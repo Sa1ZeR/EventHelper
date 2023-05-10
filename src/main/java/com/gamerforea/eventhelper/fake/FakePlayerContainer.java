@@ -118,9 +118,7 @@ public abstract class FakePlayerContainer
 
 	public final boolean setProfile(@Nullable Entity entity)
 	{
-		if (entity instanceof Player)
-			return this.setProfile(entity);
-		return false;
+		return setProfile((entity instanceof Player) ? (Player) entity : null);
 	}
 
 	public final boolean setProfile(@Nullable Player player)
