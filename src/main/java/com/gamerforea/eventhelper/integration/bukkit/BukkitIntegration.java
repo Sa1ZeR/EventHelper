@@ -3,8 +3,6 @@ package com.gamerforea.eventhelper.integration.bukkit;
 import com.gamerforea.eventhelper.EventHelperMod;
 import com.gamerforea.eventhelper.integration.IIntegration;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.common.extensions.IForgeBlockState;
@@ -72,9 +70,10 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos)
-		{
+		public boolean cantBreak(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos) {
 			Player bukkitPlayer = getPlayer(player);
+			if(bukkitPlayer == null) return false;
+
 			Block block = bukkitPlayer.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 			BlockBreakEvent event = new BlockBreakEvent(block, bukkitPlayer);
 			Bukkit.getPluginManager().callEvent(event);
@@ -82,23 +81,25 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantPlace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
+		public boolean cantPlace(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
 			return this.cantBreak(player, pos);
 		}
 
 		@Override
-		public boolean cantReplace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
+		public boolean cantReplace(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
 			return this.cantBreak(player, pos);
 		}
 
 		@Override
-		public boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim)
+		public boolean cantAttack(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull Entity victim)
 		{
 			Player bukkitPlayer = getPlayer(player);
+			if(bukkitPlayer == null) return false;
+
 			org.bukkit.entity.Entity bukkitVictim = getEntity(victim);
 			EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(bukkitPlayer, bukkitVictim, EntityDamageEvent.DamageCause.ENTITY_ATTACK, 0);
 			Bukkit.getPluginManager().callEvent(event);
@@ -106,9 +107,11 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull BlockInteractParams params)
+		public boolean cantInteract(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockInteractParams params)
 		{
 			Player bukkitPlayer = getPlayer(player);
+			if(bukkitPlayer == null) return false;
+
 			PlayerInventory inventory = bukkitPlayer.getInventory();
 			ItemStack stack = params.getHand() == InteractionHand.MAIN_HAND ? inventory.getItemInMainHand() : inventory.getItemInOffHand();
 			Block block = bukkitPlayer.getWorld().getBlockAt(params.getTargetPos().getX(), params.getTargetPos().getY(), params.getTargetPos().getZ());
@@ -118,21 +121,22 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission)
+		public boolean hasPermission(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull String permission)
 		{
+			Player bukkitPlayer = getPlayer(player);
+			if(bukkitPlayer == null) return false;
+
 			return getPlayer(player).hasPermission(permission);
 		}
 
 		@Override
-		public boolean hasPermission(@Nonnull UUID playerId, @Nonnull String permission)
-		{
+		public boolean hasPermission(@Nonnull UUID playerId, @Nonnull String permission) {
 			Player player = Bukkit.getPlayer(playerId);
 			return player != null && player.hasPermission(permission);
 		}
 
 		@Override
-		public boolean hasPermission(@Nonnull String playerName, @Nonnull String permission)
-		{
+		public boolean hasPermission(@Nonnull String playerName, @Nonnull String permission) {
 			Player player = Bukkit.getPlayerExact(playerName);
 			return player != null && player.hasPermission(permission);
 		}

@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 @Mod.EventBusSubscriber(modid = ModConstants.MODID)
 public class ExplosionByPlayer extends Explosion
 {
-	private final ServerPlayer player;
+	private final Player player;
 
 	public ExplosionByPlayer(
 			@Nonnull FakePlayerContainer fake,
@@ -32,7 +32,7 @@ public class ExplosionByPlayer extends Explosion
 	}
 
 	public ExplosionByPlayer(
-			@Nonnull ServerPlayer player,
+			@Nonnull Player player,
 			@Nonnull Level world, @Nullable
 					Entity exploder, double x, double y, double z, float size, boolean flaming, boolean damagesTerrain)
 	{
@@ -109,7 +109,7 @@ public class ExplosionByPlayer extends Explosion
 		Explosion explosion = event.getExplosion();
 		if (explosion instanceof ExplosionByPlayer explosionByPlayer)
 		{
-			ServerPlayer player = explosionByPlayer.player;
+			Player player = explosionByPlayer.player;
 			event.getAffectedBlocks().removeIf(pos -> EventUtils.cantBreak(player, pos));
 			event.getAffectedEntities().removeIf(entity -> EventUtils.cantAttack(player, entity));
 		}

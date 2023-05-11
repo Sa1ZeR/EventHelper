@@ -9,7 +9,6 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +35,7 @@ public abstract class FakePlayerContainer
 	private GameProfile profile;
 	private FakePlayer fakePlayer;
 
-	private WeakReference<ServerPlayer> realPlayer;
+	private WeakReference<Player> realPlayer;
 
 	protected FakePlayerContainer(@Nonnull FakePlayerContainer fake)
 	{
@@ -55,17 +54,14 @@ public abstract class FakePlayerContainer
 	public abstract Level getWorld();
 
 	@Nonnull
-	public final ServerPlayer getPlayer()
-	{
-		if (this.realPlayer != null)
-		{
-			ServerPlayer p = this.realPlayer.get();
+	public final Player getPlayer() {
+		if (this.realPlayer != null) {
+			Player p = this.realPlayer.get();
 			if (p == null)
 				this.realPlayer = null;
 			else
 				return p;
 		}
-
 		return this.getFakePlayer();
 	}
 
@@ -81,17 +77,15 @@ public abstract class FakePlayerContainer
 		return this.modFake = FastUtils.getFake(this.getWorld(), this.modFakeProfile);
 	}
 
-	public final boolean setRealPlayer(@Nullable Entity entity)
-	{
+	public final boolean setRealPlayer(@Nullable Entity entity) {
 		return entity instanceof Player && this.setRealPlayer((Player) entity);
 	}
 
-	public final boolean setRealPlayer(@Nullable ServerPlayer player)
-	{
-		if (this.setProfile(player))
-		{
-			if (!(player instanceof FakePlayer))
+	public final boolean setRealPlayer(@Nullable Player player) {
+		if (this.setProfile(player)) {
+			if (!(player instanceof FakePlayer)) {
 				this.realPlayer = new WeakReference<>(player);
+			}
 			return true;
 		}
 		return false;

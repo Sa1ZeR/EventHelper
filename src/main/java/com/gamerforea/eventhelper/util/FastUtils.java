@@ -2,7 +2,6 @@ package com.gamerforea.eventhelper.util;
 
 import com.gamerforea.eventhelper.fake.FakePlayerContainer;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.renderer.EffectInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.server.MinecraftServer;
@@ -53,7 +52,7 @@ public final class FastUtils
 	}
 
 	@Deprecated
-	public static boolean isOnline(@Nonnull Player player)
+	public static boolean isOnline(@Nonnull ServerPlayer player)
 	{
 		if (player instanceof FakePlayer)
 			return true;
@@ -66,22 +65,19 @@ public final class FastUtils
 		return false;
 	}
 
-	public static boolean isValidRealPlayer(@Nullable Player player)
+	public static boolean isValidRealPlayer(@Nullable ServerPlayer player)
 	{
 		return isValidRealPlayer(player, true);
 	}
 
-	public static boolean isValidRealPlayer(@Nullable Player player, boolean checkAlive)
+	public static boolean isValidRealPlayer(@Nullable ServerPlayer player, boolean checkAlive)
 	{
 		if (player == null || player instanceof FakePlayer)
 			return false;
 
-		if (player instanceof ServerPlayer)
-		{
-			ServerGamePacketListener connection = ((ServerPlayer) player).connection;
-			if (connection == null || !connection.getConnection().isConnected())
-				return false;
-		}
+		ServerGamePacketListener connection = player.connection;
+		if (connection == null || !connection.getConnection().isConnected())
+			return false;
 
 		return !checkAlive || player.isAlive();
 	}

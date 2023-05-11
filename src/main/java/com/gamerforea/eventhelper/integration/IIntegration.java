@@ -4,7 +4,6 @@ import com.gamerforea.eventhelper.cause.ICauseStackManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -19,32 +18,32 @@ import java.util.UUID;
 
 public interface IIntegration
 {
-	boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos);
+	boolean cantBreak(@Nonnull Player player, @Nonnull BlockPos pos);
 
-	boolean cantPlace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
+	boolean cantPlace(@Nonnull Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
 
-	boolean cantReplace(@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
+	boolean cantReplace(@Nonnull Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
 
-	boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim);
+	boolean cantAttack(@Nonnull Player player, @Nonnull Entity victim);
 
 	default boolean cantInteract(
-			@Nonnull ServerPlayer player,
+			@Nonnull Player player,
 			@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return this.cantInteract(player, new BlockInteractParams(hand, targetPos, targetSide));
 	}
 
 	default boolean cantInteract(
-			@Nonnull ServerPlayer player,
+			@Nonnull Player player,
 			@Nonnull InteractionHand hand,
 			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		return this.cantInteract(player, new BlockInteractParams(hand, targetPos, targetSide).setInteractionPos(interactionPos));
 	}
 
-	boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull BlockInteractParams params);
+	boolean cantInteract(@Nonnull Player player, @Nonnull BlockInteractParams params);
 
-	boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission);
+	boolean hasPermission(@Nonnull Player player, @Nonnull String permission);
 
 	default boolean hasPermission(@Nonnull UUID playerId, @Nonnull String permission)
 	{
@@ -52,7 +51,7 @@ public interface IIntegration
 		if (server == null)
 			return false;
 		PlayerList playerList = server.getPlayerList();
-		ServerPlayer player = playerList.getPlayer(playerId);
+		Player player = playerList.getPlayer(playerId);
 		return player != null && this.hasPermission(player, permission);
 	}
 
@@ -62,7 +61,7 @@ public interface IIntegration
 		if (server == null)
 			return false;
 		PlayerList playerList = server.getPlayerList();
-		ServerPlayer player = playerList.getPlayerByName(playerName);
+		Player player = playerList.getPlayerByName(playerName);
 		return player != null && this.hasPermission(player, permission);
 	}
 

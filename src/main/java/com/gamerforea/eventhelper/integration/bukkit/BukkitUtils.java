@@ -2,7 +2,8 @@ package com.gamerforea.eventhelper.integration.bukkit;
 
 import com.gamerforea.eventhelper.EventHelperMod;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import org.bukkit.Bukkit;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
@@ -10,16 +11,15 @@ import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import net.minecraft.world.entity.Entity;
 
 public final class BukkitUtils
 {
 	private static final Method getBukkitEntity;
 
-	@Nonnull
-	public static Player getPlayer(@Nonnull ServerPlayer player)
+	public static Player getPlayer(@Nonnull net.minecraft.world.entity.player.Player player)
 	{
-		return (Player) getEntity(player);
+		//return (Player) getEntity(player);
+		return Bukkit.getPlayerExact(player.getName().getString());
 	}
 
 	@Nonnull

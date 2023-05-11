@@ -7,13 +7,12 @@ import com.gamerforea.eventhelper.integration.IIntegration;
 import com.gamerforea.eventhelper.integration.bukkit.BukkitIntegration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.UUID;
 
 import static com.gamerforea.eventhelper.EventHelperMod.LOGGER;
@@ -22,7 +21,7 @@ public final class EventUtils
 {
 	private static final IIntegration INTEGRATION;
 
-	public static boolean cantBreak(@Nonnull ServerPlayer player, @Nonnull BlockPos pos)
+	public static boolean cantBreak(@Nonnull Player player, @Nonnull BlockPos pos)
 	{
 		try
 		{
@@ -38,7 +37,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantPlace(
-			@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
+			@Nonnull Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		try
 		{
@@ -54,7 +53,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantReplace(
-			@Nonnull ServerPlayer player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
+			@Nonnull Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 	{
 		try
 		{
@@ -69,7 +68,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean cantAttack(@Nonnull ServerPlayer player, @Nonnull Entity victim)
+	public static boolean cantAttack(@Nonnull Player player, @Nonnull Entity victim)
 	{
 		try
 		{
@@ -85,7 +84,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantInteract(
-			@Nonnull ServerPlayer player,
+			@Nonnull Player player,
 			@Nonnull InteractionHand hand, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
 		try
@@ -102,7 +101,7 @@ public final class EventUtils
 	}
 
 	public static boolean cantInteract(
-			@Nonnull ServerPlayer player,
+			@Nonnull Player player,
 			@Nonnull InteractionHand hand,
 			@Nonnull BlockPos interactionPos, @Nonnull BlockPos targetPos, @Nonnull Direction targetSide)
 	{
@@ -119,7 +118,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean cantInteract(@Nonnull ServerPlayer player, @Nonnull IIntegration.BlockInteractParams params)
+	public static boolean cantInteract(@Nonnull Player player, @Nonnull IIntegration.BlockInteractParams params)
 	{
 		try
 		{
@@ -134,7 +133,7 @@ public final class EventUtils
 		}
 	}
 
-	public static boolean hasPermission(@Nonnull ServerPlayer player, @Nonnull String permission)
+	public static boolean hasPermission(@Nonnull Player player, @Nonnull String permission)
 	{
 		try
 		{
