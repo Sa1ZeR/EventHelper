@@ -12,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.extensions.IForgeBlockState;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -44,7 +45,7 @@ public class ForgeIntegration implements IIntegration {
     @Override
     public boolean cantBreak(@NotNull Player player, @NotNull BlockPos pos, @NotNull IForgeBlockState blockState) {
         Player forgePlayer = ForgeUtils.getPlayerByName(player.getName().getString());
-        if(forgePlayer == null) return false;
+        if(forgePlayer == null) return true;
 
         BlockEvent.BreakEvent breakEvent = new BlockEvent.BreakEvent(player.level, pos, (BlockState) blockState, forgePlayer);
         return MinecraftForge.EVENT_BUS.post(breakEvent);
@@ -63,7 +64,7 @@ public class ForgeIntegration implements IIntegration {
     @Override
     public boolean cantAttack(@NotNull Player player, @NotNull Entity victim) {
         Player forgePlayer = ForgeUtils.getPlayerByName(player.getName().getString());
-        if(forgePlayer == null) return false;
+        if(forgePlayer == null) return true;
 
         LivingAttackEvent event =
                 new LivingAttackEvent((LivingEntity) victim, DamageSource.playerAttack(forgePlayer), 1);
@@ -74,7 +75,7 @@ public class ForgeIntegration implements IIntegration {
     @Override
     public boolean cantInteract(@NotNull Player player, @NotNull IIntegration.BlockInteractParams params) {
         Player forgePlayer = ForgeUtils.getPlayerByName(player.getName().getString());
-        if(forgePlayer == null) return false;
+        if(forgePlayer == null) return true;
 
         PlayerInteractEvent event;
         if(params.getAction() == BlockInteractAction.LEFT_CLICK)
@@ -91,7 +92,7 @@ public class ForgeIntegration implements IIntegration {
     @Override
     public boolean hasPermission(@NotNull Player player, @NotNull String permission) {
         Player forgePlayer = ForgeUtils.getPlayerByName(player.getName().getString());
-        if(forgePlayer == null) return false;
+        if(forgePlayer == null) return true;
 
         return LuckPermsIntegration.hasPermission((ServerPlayer) forgePlayer, permission);
     }

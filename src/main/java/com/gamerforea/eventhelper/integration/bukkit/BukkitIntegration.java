@@ -73,7 +73,7 @@ public final class BukkitIntegration
 		@Override
 		public boolean cantBreak(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @NotNull IForgeBlockState blockState) {
 			Player bukkitPlayer = getPlayer(player);
-			if(bukkitPlayer == null) return false;
+			if(bukkitPlayer == null || !bukkitPlayer.isOnline()) return true;
 
 			Block block = bukkitPlayer.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 			BlockBreakEvent event = new BlockBreakEvent(block, bukkitPlayer);
@@ -99,7 +99,7 @@ public final class BukkitIntegration
 		public boolean cantAttack(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull Entity victim)
 		{
 			Player bukkitPlayer = getPlayer(player);
-			if(bukkitPlayer == null) return false;
+			if(bukkitPlayer == null || !bukkitPlayer.isOnline()) return true;
 
 			org.bukkit.entity.Entity bukkitVictim = getEntity(victim);
 			EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(bukkitPlayer, bukkitVictim, EntityDamageEvent.DamageCause.ENTITY_ATTACK, 0);
@@ -111,7 +111,7 @@ public final class BukkitIntegration
 		public boolean cantInteract(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockInteractParams params)
 		{
 			Player bukkitPlayer = getPlayer(player);
-			if(bukkitPlayer == null) return false;
+			if(bukkitPlayer == null || !bukkitPlayer.isOnline()) return true;
 
 			PlayerInventory inventory = bukkitPlayer.getInventory();
 			ItemStack stack = params.getHand() == InteractionHand.MAIN_HAND ? inventory.getItemInMainHand() : inventory.getItemInOffHand();
@@ -125,7 +125,7 @@ public final class BukkitIntegration
 		public boolean hasPermission(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull String permission)
 		{
 			Player bukkitPlayer = getPlayer(player);
-			if(bukkitPlayer == null) return false;
+			if(bukkitPlayer == null || !bukkitPlayer.isOnline()) return true;
 
 			return getPlayer(player).hasPermission(permission);
 		}
