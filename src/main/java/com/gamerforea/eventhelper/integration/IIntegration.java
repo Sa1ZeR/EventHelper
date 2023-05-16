@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.extensions.IForgeBlockState;
 import net.minecraftforge.server.ServerLifecycleHooks;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 public interface IIntegration
 {
-	boolean cantBreak(@Nonnull Player player, @Nonnull BlockPos pos);
+	boolean cantBreak(@Nonnull Player player, @Nonnull BlockPos pos, @NotNull IForgeBlockState blockState);
 
 	boolean cantPlace(@Nonnull Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState);
 

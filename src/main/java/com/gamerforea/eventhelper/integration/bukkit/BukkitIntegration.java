@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,7 +71,7 @@ public final class BukkitIntegration
 		}
 
 		@Override
-		public boolean cantBreak(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos) {
+		public boolean cantBreak(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @NotNull IForgeBlockState blockState) {
 			Player bukkitPlayer = getPlayer(player);
 			if(bukkitPlayer == null) return false;
 
@@ -84,14 +85,14 @@ public final class BukkitIntegration
 		public boolean cantPlace(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
-			return this.cantBreak(player, pos);
+			return this.cantBreak(player, pos, blockState);
 		}
 
 		@Override
 		public boolean cantReplace(@Nonnull net.minecraft.world.entity.player.Player player, @Nonnull BlockPos pos, @Nonnull IForgeBlockState blockState)
 		{
 			// TODO Make correct implementation
-			return this.cantBreak(player, pos);
+			return this.cantBreak(player, pos, blockState);
 		}
 
 		@Override

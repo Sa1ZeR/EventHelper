@@ -5,6 +5,7 @@ import com.gamerforea.eventhelper.cause.DummyCauseStackManager;
 import com.gamerforea.eventhelper.cause.ICauseStackManager;
 import com.gamerforea.eventhelper.integration.IIntegration;
 import com.gamerforea.eventhelper.integration.bukkit.BukkitIntegration;
+import com.gamerforea.eventhelper.integration.forge.ForgeIntegration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -25,7 +26,7 @@ public final class EventUtils
 	{
 		try
 		{
-			return INTEGRATION.cantBreak(player, pos);
+			return INTEGRATION.cantBreak(player, pos, player.level.getBlockState(pos));
 		}
 		catch (Throwable throwable)
 		{
@@ -185,6 +186,6 @@ public final class EventUtils
 	}
 
 	static {
-		INTEGRATION = BukkitIntegration.getIntegration();
+		INTEGRATION = ForgeIntegration.getIntegration();
 	}
 }
