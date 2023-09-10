@@ -1,6 +1,7 @@
 package com.gamerforea.eventhelper.util;
 
 import com.gamerforea.eventhelper.fake.FakePlayerContainer;
+import com.gamerforea.eventhelper.fake.IFakeTile;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
@@ -44,6 +45,19 @@ public final class FastUtils
 			BlockEntity tile = world.getBlockEntity(pos);
 			if (tileClass.isInstance(tile))
 			{
+				FakePlayerContainer fake = mapper.apply((T) tile);
+				return fake.setProfile(entity);
+			}
+		}
+		return false;
+	}
+
+	public static <T extends IFakeTile> boolean setFakeProfile(
+			@Nonnull Level world,
+			@Nonnull BlockPos pos, @Nonnull Entity entity, Class<T> tileClass, Function<T, FakePlayerContainer> mapper) {
+		if (world.isLoaded(pos)) {
+			BlockEntity tile = world.getBlockEntity(pos);
+			if (tileClass.isInstance(tile)) {
 				FakePlayerContainer fake = mapper.apply((T) tile);
 				return fake.setProfile(entity);
 			}
